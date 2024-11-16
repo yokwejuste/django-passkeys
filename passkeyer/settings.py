@@ -2,6 +2,10 @@ import os
 
 from pathlib import Path
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -10,7 +14,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-5g#21!214eu_pbvdl=8b)fz+8f9v-!^^p_q6v*(t$(yd_e72_b'
+SECRET_KEY = 'django-insecure-r*gd8jnwqdj)0gyeq-!_lk&m!c90-%%0wn6=#)h-w$k9k-97*j'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -27,6 +31,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    "passkeys",
+    "fido_auth",
 ]
 
 MIDDLEWARE = [
@@ -39,12 +46,14 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'passkey_auth.urls'
+ROOT_URLCONF = 'passkeyer.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            BASE_DIR / "templates",
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -57,7 +66,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'passkey_auth.wsgi.application'
+WSGI_APPLICATION = 'passkeyer.wsgi.application'
 
 
 # Database
@@ -70,6 +79,12 @@ DATABASES = {
     }
 }
 
+AUTHENTICATION_BACKENDS = [
+    'passkeys.backend.PasskeyModelBackend',
+]
+
+FIDO_SERVER_ID = os.getenv("FIDO_SERVER_ID")
+FIDO_SERVER_NAME = os.getenv("FIDO_SERVER_NAME")
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -101,17 +116,16 @@ USE_I18N = True
 
 USE_TZ = True
 
+LOGIN_URL = '/login/'
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / "static"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
-
-
-FIDO_SERVER_NAME = os.getenv("FIDO_SERVER_NAME")
-FIDO_SERVER_ID = os.getenv("FIDO_SERVER_ID")
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
