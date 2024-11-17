@@ -162,7 +162,7 @@ cython_debug/
 .history/
 .idea/
 *.sqlite3
-.idx/
+# .idx/
 .vscode/
 
 # Elastic Beanstalk Files
