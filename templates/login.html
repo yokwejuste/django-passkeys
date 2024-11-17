@@ -1,11 +1,14 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
+    {% load static %}
+    <script src="{% static 'js/script.js' %}"></script>
 </head>
+
 <body>
     <h2>Login</h2>
 
@@ -22,60 +25,6 @@
 
     <button type="button" onclick="loginWithPasskey()">Login with Passkey</button>
 
-    <script>
-        async function loginWithPasskey() {
-            try {
-                const response = await fetch("{% url 'login' %}", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
-                    },
-                    body: JSON.stringify({request_type: "webauthn"})
-                });
-
-                const data = await response.json();
-
-                if (data.challenge) {
-                    const options = {
-                        publicKey: {
-                            challenge: Uint8Array.from(atob(data.challenge.challenge), c => c.charCodeAt(0)),
-                            allowCredentials: data.challenge.allowCredentials.map(cred => ({
-                                id: Uint8Array.from(atob(cred.id), c => c.charCodeAt(0)),
-                                type: cred.type
-                            }))
-                        }
-                    };
-
-                    const assertion = await navigator.credentials.get(options);
-
-                    const authResponse = await fetch("{% url 'login' %}", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
-                        },
-                        body: JSON.stringify({
-                            response: {
-                                id: assertion.id,
-                                clientDataJSON: btoa(String.fromCharCode(...new Uint8Array(assertion.response.clientDataJSON))),
-                                authenticatorData: btoa(String.fromCharCode(...new Uint8Array(assertion.response.authenticatorData))),
-                                signature: btoa(String.fromCharCode(...new Uint8Array(assertion.response.signature)))
-                            }
-                        })
-                    });
-
-                    if (authResponse.ok) {
-                        alert("Logged in with passkey!");
-                        window.location.href = "/";
-                    } else {
-                        alert("Passkey login failed.");
-                    }
-                }
-            } catch (error) {
-                console.error("Error during passkey authentication", error);
-            }
-        }
-    </script>
 </body>
+
 </html>
