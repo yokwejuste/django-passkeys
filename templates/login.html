@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -5,26 +6,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
 
 <body>
-    <h2>Login</h2>
+    <div class="container">
+        <h2>Login</h2>
 
-    <form id="loginForm" method="post" action="{% url 'login' %}">
-        {% csrf_token %}
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" required>
+        <form id="loginForm" method="post" action="{% url 'login' %}">
+            {% csrf_token %}
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
 
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
 
-        <button type="submit">Login</button>
-    </form>
+            <button type="submit">Login</button>
+        </form>
 
-    <button type="button" onclick="loginWithPasskey()">Login with Passkey</button>
+        <button type="button" onclick="loginWithPasskey()">Login with Passkey</button>
+    </div>
 
+    <script src="{% static 'js/script.js' %}"></script>
 </body>
-<script src="{% static 'js/script.js' %}"></script>
 
 </html>

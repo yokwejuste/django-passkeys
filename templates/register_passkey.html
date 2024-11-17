@@ -6,15 +6,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register Passkey</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
 
 <body>
-    <h2>Register Your Passkey</h2>
-    <form id="registerPasskeyForm" method="post">
-        {% csrf_token %}
-        <button type="button" onclick="registerPasskey()">Register Passkey</button>
-    </form>
+    <div class="container">
+        <h2>Register Your Passkey</h2>
+        <form id="registerPasskeyForm" method="post">
+            {% csrf_token %}
+            <button type="button" onclick="registerPasskey()">Register Passkey</button>
+        </form>
+    </div>
+
+    <script src="{% static 'js/script.js' %}"></script>
 </body>
-<script src="{% static 'js/script.js' %}"></script>
 
 </html>
