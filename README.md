@@ -88,23 +88,23 @@ Access the app at `http://localhost:8000`.
 
 ### Register a User
 
-1. Navigate to `/auth/register/`.
+1. Navigate to `/register/`.
 2. Fill out the registration form to create a user account.
 
 ### Log In
 
-1. Navigate to `/auth/login/`.
+1. Navigate to `/login/`.
 2. Enter your username and password to log in.
 
 ### Register a Passkey
 
 1. Log in with your username and password.
-2. Navigate to `/auth/register-passkey/`.
+2. Navigate to `/register-passkey/`.
 3. Click "Register Passkey" and follow the prompts to register your passkey.
 
 ### Log In with a Passkey
 
-1. Navigate to `/auth/login/`.
+1. Navigate to `/login/`.
 2. Click "Login with Passkey" and authenticate using your registered passkey.
 
 ---
