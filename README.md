@@ -1,4 +1,3 @@
-```markdown
 # Django Passkey Authentication
 
 A Django-based web application that implements traditional authentication (username/password) and passkey authentication using the WebAuthn API. Passkey authentication allows users to securely log in without passwords, using biometric or hardware-based authentication methods.
