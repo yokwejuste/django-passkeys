@@ -19,7 +19,14 @@ SECRET_KEY = 'django-insecure-r*gd8jnwqdj)0gyeq-!_lk&m!c90-%%0wn6=#)h-w$k9k-97*j
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '8000-idx-django-passkeys-1731757929743.cluster-4ezwrnmkojawstf2k7vqy36oe6.cloudworkstations.dev',
+    '127.0.0.1',
+    ]
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://8000-idx-django-passkeys-1731757929743.cluster-4ezwrnmkojawstf2k7vqy36oe6.cloudworkstations.dev',
+    ]
 
 
 # Application definition
@@ -129,3 +136,4 @@ STATIC_ROOT = BASE_DIR / "static"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+

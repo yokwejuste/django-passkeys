@@ -23,7 +23,10 @@ def register_passkey(request):
 
         return JsonResponse({
             'challenge': challenge_b64,
-            'rp': {'name': settings.FIDO_SERVER_NAME, 'id': 'localhost'},
+            'rp': {
+                'name': settings.FIDO_SERVER_NAME,
+                'id': settings.FIDO_SERVER_ID,
+            },
             'user': {
                 'id': user_id_b64,
                 'name': request.user.username,
@@ -45,41 +48,45 @@ def register_passkey(request):
 
 @csrf_exempt
 def login_view(request):
-    if request.method == 'POST' and request.headers.get('Content-Type') == 'application/json':
-        data = json.loads(request.body)
+    user = request.user
+    if not user.is_authenticated:
+        if request.method == 'POST' and request.headers.get('Content-Type') == 'application/json':
+            data = json.loads(request.body)
 
-        if data.get("request_type") == "webauthn":
-            challenge = os.urandom(32)
-            request.session['webauthn_challenge'] = base64.b64encode(challenge).decode('utf-8')
+            if data.get("request_type") == "webauthn":
+                challenge = os.urandom(32)
+                request.session['webauthn_challenge'] = base64.b64encode(challenge).decode('utf-8')
 
-            passkey_credentials = UserPasskey.objects.values_list('credential_id', flat=True)
-            allow_credentials = [{'id': base64.b64encode(cred_id).decode('utf-8'), 'type': 'public-key'}
-                                 for cred_id in passkey_credentials]
+                passkey_credentials = UserPasskey.objects.values_list('credential_id', flat=True)
+                allow_credentials = [{'id': base64.b64encode(cred_id).decode('utf-8'), 'type': 'public-key'}
+                                    for cred_id in passkey_credentials]
 
-            return JsonResponse({
-                'challenge': {
-                    'challenge': request.session['webauthn_challenge'],
-                    'allowCredentials': allow_credentials,
-                }
-            })
+                return JsonResponse({
+                    'challenge': {
+                        'challenge': request.session['webauthn_challenge'],
+                        'allowCredentials': allow_credentials,
+                    }
+                })
 
-        elif data.get("response"):
-            response = data["response"]
-            credential_id = base64.b64decode(response['id'])
-            user_passkey = UserPasskey.objects.get(credential_id=credential_id)
-            user = user_passkey.user
+            elif data.get("response"):
+                response = data["response"]
+                credential_id = base64.b64decode(response['id'])
+                user_passkey = UserPasskey.objects.get(credential_id=credential_id)
+                user = user_passkey.user
 
+                login(request, user)
+                return JsonResponse({"status": "Logged in with passkey!"})
+
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
             login(request, user)
-            return JsonResponse({"status": "Logged in with passkey!"})
+            return HttpResponse("Logged in!")
+        else:
+            return render(request, 'login.html')
 
-    username = request.POST.get('username')
-    password = request.POST.get('password')
-    user = authenticate(request, username=username, password=password)
-    if user is not None:
-        login(request, user)
-        return HttpResponse("Logged in!")
-    else:
-        return render(request, 'login.html')
+    return HttpResponse("<b>Hey, you are already logged in!!!</b>")
 
 
 @login_required
@@ -90,3 +97,8 @@ def logout_view(request):
     logout(request)
     messages.success(request, "Successfully logged out!")
     return HttpResponse("Logged out!")
+
+
+def index(request):
+    return HttpResponse("<b>Hello Python !!!</b>")
+
