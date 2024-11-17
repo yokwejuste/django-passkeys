@@ -12,6 +12,8 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from passkeys.models import UserPasskey
+from fido_auth.forms import UserRegistrationForm
+
 
 @login_required
 def register_passkey(request):
@@ -102,3 +104,20 @@ def logout_view(request):
 def index(request):
     return HttpResponse("<b>Hello Python !!!</b>")
 
+
+def create_user_account(request):
+    if request.method == "POST":
+        form = UserRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.set_password(form.cleaned_data["password"])
+            user.save()
+            login(request, user)
+            messages.success(request, "Account created successfully!")
+            return redirect("home")
+        else:
+            messages.error(request, "Please correct the errors below.")
+    else:
+        form = UserRegistrationForm()
+
+    return render(request, "create_user.html", {"form": form})
