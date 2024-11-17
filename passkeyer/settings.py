@@ -3,30 +3,20 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
+from utils import str_to_bool
 
-load_dotenv()
+load_dotenv(".env")
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
+SECRET_KEY = os.getenv('SECRET_KEY')
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-r*gd8jnwqdj)0gyeq-!_lk&m!c90-%%0wn6=#)h-w$k9k-97*j'
+DEBUG = str_to_bool(os.getenv("DEBUG", "False"))
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 
-ALLOWED_HOSTS = [
-    '8000-idx-django-passkeys-1731828793832.cluster-rcyheetymngt4qx5fpswua3ry4.cloudworkstations.dev',
-    '127.0.0.1',
-    ]
-
-CSRF_TRUSTED_ORIGINS = [
-    'https://8000-idx-django-passkeys-1731828793832.cluster-rcyheetymngt4qx5fpswua3ry4.cloudworkstations.dev',
-    ]
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', '').split(', ')
 
 
 # Application definition
@@ -117,7 +107,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Africa/Douala'
 
 USE_I18N = True
 
@@ -138,5 +128,5 @@ STATICFILES_DIRS = [
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
