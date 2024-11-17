@@ -20,12 +20,12 @@ SECRET_KEY = 'django-insecure-r*gd8jnwqdj)0gyeq-!_lk&m!c90-%%0wn6=#)h-w$k9k-97*j
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    '8000-idx-django-passkeys-1731757929743.cluster-4ezwrnmkojawstf2k7vqy36oe6.cloudworkstations.dev',
+    '8000-idx-django-passkeys-1731828793832.cluster-rcyheetymngt4qx5fpswua3ry4.cloudworkstations.dev',
     '127.0.0.1',
     ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://8000-idx-django-passkeys-1731757929743.cluster-4ezwrnmkojawstf2k7vqy36oe6.cloudworkstations.dev',
+    'https://8000-idx-django-passkeys-1731828793832.cluster-rcyheetymngt4qx5fpswua3ry4.cloudworkstations.dev',
     ]
 
 
@@ -130,9 +130,9 @@ LOGIN_URL = '/login/'
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
-STATIC_ROOT = BASE_DIR / "static"
+# STATIC_ROOT = BASE_DIR / "static"
 STATICFILES_DIRS = [
-    BASE_DIR / "staticfiles"
+    BASE_DIR / "static"
 ]
 
 # Default primary key field type

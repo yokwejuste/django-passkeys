@@ -1,6 +1,6 @@
 async function registerPasskey() {
     try {
-        const response = await fetch("{% url 'register_passkey' %}", {
+        const response = await fetch('/register-passkey/', {
             method: "POST",
             headers: {
                 "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
@@ -38,7 +38,7 @@ async function registerPasskey() {
 
             const credential = await navigator.credentials.create({publicKey});
 
-            const completeResponse = await fetch("{% url 'register_passkey' %}", {
+            const completeResponse = await fetch('/register-passkey/', {
                 method: "PUT",
                 headers: {
                     "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value,
@@ -72,7 +72,7 @@ async function registerPasskey() {
 
 async function loginWithPasskey() {
     try {
-        const response = await fetch("{% url 'login' %}", {
+        const response = await fetch('/login/', {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -96,7 +96,7 @@ async function loginWithPasskey() {
 
             const assertion = await navigator.credentials.get(options);
 
-            const authResponse = await fetch("{% url 'login' %}", {
+            const authResponse = await fetch('/login/', {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
