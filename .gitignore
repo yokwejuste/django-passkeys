@@ -164,3 +164,8 @@ cython_debug/
 *.sqlite3
 .idx/
 .vscode/
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
