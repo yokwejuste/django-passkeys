@@ -74,7 +74,7 @@ def login_view(request):
                 )
                 allow_credentials = [
                     {
-                        "id": base64.b64encode(cred_id).decode("utf-8"),
+                        "id": base64.b64encode(cred_id.encode("utf-8")).decode("utf-8"),
                         "type": "public-key",
                     }
                     for cred_id in passkey_credentials
