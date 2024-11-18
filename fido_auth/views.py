@@ -140,7 +140,7 @@ def create_user_account(request):
             user.save()
             login(request, user)
             messages.success(request, "Account created successfully!")
-            return redirect("home")
+            return redirect("index")
         else:
             messages.error(request, "Please correct the errors below.")
     else:
