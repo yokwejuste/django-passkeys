@@ -13,6 +13,7 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from passkeys.models import UserPasskey
 from fido_auth.forms import UserRegistrationForm
+from django.db import IntegrityError
 
 
 @login_required
@@ -45,11 +46,23 @@ def register_passkey(request):
     elif request.method == "PUT":
         credential_data = json.loads(request.body)
         raw_id = credential_data["rawId"]
+        device_id = credential_data["id"]
+        credential_id = base64.b64encode(base64.b64decode(raw_id)).decode("utf-8")
 
-        UserPasskey.objects.create(user=request.user, credential_id=raw_id)
-        return JsonResponse({"status": "success"})
+        try:
+            UserPasskey.objects.update_or_create(
+                user=request.user,
+                device_id=device_id,
+                defaults={"credential_id": credential_id},
+            )
+            return JsonResponse({"status": "success"})
+        except IntegrityError:
+            return JsonResponse(
+                {"error": "A passkey for this device already exists."}, status=400
+            )
 
     return render(request, "register_passkey.html")
+
 
 
 @csrf_exempt
