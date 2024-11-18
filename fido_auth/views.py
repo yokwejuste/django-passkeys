@@ -45,9 +45,8 @@ def register_passkey(request):
     elif request.method == "PUT":
         credential_data = json.loads(request.body)
         raw_id = credential_data["rawId"]
-        credential_id = base64.b64encode(base64.b64decode(raw_id)).decode("utf-8")
 
-        UserPasskey.objects.create(user=request.user, credential_id=credential_id)
+        UserPasskey.objects.create(user=request.user, credential_id=raw_id)
         return JsonResponse({"status": "success"})
 
     return render(request, "register_passkey.html")
@@ -55,48 +54,40 @@ def register_passkey(request):
 
 @csrf_exempt
 def login_view(request):
-    user = request.user
-    if not user.is_authenticated:
-        if (
-            request.method == "POST"
-            and request.headers.get("Content-Type") == "application/json"
-        ):
+    if not request.user.is_authenticated:
+        if request.method == "POST" and request.headers.get("Content-Type") == "application/json":
             data = json.loads(request.body)
 
             if data.get("request_type") == "webauthn":
                 challenge = os.urandom(32)
-                request.session["webauthn_challenge"] = base64.b64encode(
-                    challenge
-                ).decode("utf-8")
+                request.session["webauthn_challenge"] = base64.b64encode(challenge).decode("utf-8")
 
-                passkey_credentials = UserPasskey.objects.values_list(
-                    "credential_id", flat=True
-                )
+                passkey_credentials = UserPasskey.objects.filter(user=request.user).values_list("credential_id", flat=True)
                 allow_credentials = [
                     {
-                        "id": base64.b64encode(cred_id.encode("utf-8")).decode("utf-8"),
+                        "id": cred_id,
                         "type": "public-key",
                     }
                     for cred_id in passkey_credentials
                 ]
 
-                return JsonResponse(
-                    {
-                        "challenge": {
-                            "challenge": request.session["webauthn_challenge"],
-                            "allowCredentials": allow_credentials,
-                        }
+                return JsonResponse({
+                    "challenge": {
+                        "challenge": request.session["webauthn_challenge"],
+                        "allowCredentials": allow_credentials,
                     }
-                )
+                })
 
             elif data.get("response"):
                 response = data["response"]
-                credential_id = base64.b64decode(response["id"])
-                user_passkey = UserPasskey.objects.get(credential_id=credential_id)
-                user = user_passkey.user
-
-                login(request, user)
-                return JsonResponse({"status": "Logged in with passkey!"})
+                credential_id = response["id"]
+                try:
+                    user_passkey = UserPasskey.objects.get(credential_id=credential_id)
+                    user = user_passkey.user
+                    login(request, user)
+                    return JsonResponse({"status": "Logged in with passkey!"})
+                except UserPasskey.DoesNotExist:
+                    return JsonResponse({"error": "Invalid passkey credentials."}, status=400)
 
         username = request.POST.get("username")
         password = request.POST.get("password")
@@ -108,6 +99,7 @@ def login_view(request):
             return render(request, "login.html")
 
     return HttpResponse("<b>Hey, you are already logged in!!!</b>")
+
 
 
 @login_required
