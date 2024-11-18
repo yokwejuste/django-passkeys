@@ -12,6 +12,7 @@ class DjPassKey(models.Model):
     last_used = models.DateTimeField(null=True, default=None)
     credential_id = models.CharField(max_length=255, unique=True)
     token = models.CharField(max_length=255, null=False)
+    device_id = models.CharField(max_length=255, help_text="Unique identifier for the device", null=True, blank=True)
 
     class Meta:
         unique_together = ["platform", "user"]
