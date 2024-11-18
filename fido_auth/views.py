@@ -22,7 +22,9 @@ def register_passkey(request):
         challenge = os.urandom(32)
         challenge_b64 = base64.b64encode(challenge).decode("utf-8")
 
-        user_id_b64 = base64.b64encode(request.user.pk.to_bytes(4, "big")).decode("utf-8")
+        user_id_b64 = base64.b64encode(request.user.pk.to_bytes(4, "big")).decode(
+            "utf-8"
+        )
 
         return JsonResponse(
             {
@@ -67,18 +69,24 @@ def register_passkey(request):
     return render(request, "register_passkey.html")
 
 
-
 @csrf_exempt
 def login_view(request):
     if not request.user.is_authenticated:
-        if request.method == "POST" and request.headers.get("Content-Type") == "application/json":
+        if (
+            request.method == "POST"
+            and request.headers.get("Content-Type") == "application/json"
+        ):
             data = json.loads(request.body)
 
             if data.get("request_type") == "webauthn":
                 challenge = os.urandom(32)
-                request.session["webauthn_challenge"] = base64.b64encode(challenge).decode("utf-8")
+                request.session["webauthn_challenge"] = base64.b64encode(
+                    challenge
+                ).decode("utf-8")
 
-                passkey_credentials = DjPassKey.objects.values_list("credential_id", flat=True)
+                passkey_credentials = DjPassKey.objects.values_list(
+                    "credential_id", flat=True
+                )
                 allow_credentials = [
                     {
                         "id": cred_id,
@@ -87,23 +95,39 @@ def login_view(request):
                     for cred_id in passkey_credentials
                 ]
 
-                return JsonResponse({
-                    "challenge": {
+                return JsonResponse(
+                    {
                         "challenge": request.session["webauthn_challenge"],
                         "allowCredentials": allow_credentials,
                     }
-                })
+                )
 
             elif data.get("response"):
                 response = data["response"]
                 credential_id = response["id"]
+
                 try:
                     user_passkey = DjPassKey.objects.get(credential_id=credential_id)
                     user = user_passkey.user
+
+                    client_data_json = base64.b64decode(
+                        response["clientDataJSON"]
+                    ).decode("utf-8")
+                    client_data = json.loads(client_data_json)
+
+                    if client_data.get("challenge") != request.session.get(
+                        "webauthn_challenge"
+                    ):
+                        return JsonResponse(
+                            {"error": "Challenge validation failed."}, status=400
+                        )
+
                     login(request, user)
                     return JsonResponse({"status": "Logged in with passkey!"})
                 except DjPassKey.DoesNotExist:
-                    return JsonResponse({"error": "Invalid passkey credentials."}, status=400)
+                    return JsonResponse(
+                        {"error": "Invalid passkey credentials."}, status=400
+                    )
 
         username = request.POST.get("username")
         password = request.POST.get("password")
