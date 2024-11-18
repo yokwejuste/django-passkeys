@@ -75,7 +75,7 @@ def login_view(request):
                 challenge = os.urandom(32)
                 request.session["webauthn_challenge"] = base64.b64encode(challenge).decode("utf-8")
 
-                passkey_credentials = UserPasskey.objects.filter(user=request.user).values_list("credential_id", flat=True)
+                passkey_credentials = UserPasskey.objects.values_list("credential_id", flat=True)
                 allow_credentials = [
                     {
                         "id": cred_id,
@@ -112,7 +112,6 @@ def login_view(request):
             return render(request, "login.html")
 
     return HttpResponse("<b>Hey, you are already logged in!!!</b>")
-
 
 
 @login_required

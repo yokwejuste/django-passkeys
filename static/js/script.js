@@ -10,70 +10,51 @@ async function registerPasskey() {
         const data = await response.json();
 
         if (data.challenge) {
-            const challengeBuffer = Uint8Array.from(atob(data.challenge), c => c.charCodeAt(0)).buffer;
-            const userIdBuffer = Uint8Array.from(atob(data.user.id), c => c.charCodeAt(0)).buffer;
-
             const publicKey = {
-                challenge: challengeBuffer,
-                rp: {
-                    name: data.rp.name,
-                    id: data.rp.id
-                },
+                challenge: Uint8Array.from(atob(data.challenge), c => c.charCodeAt(0)),
+                rp: data.rp,
                 user: {
-                    id: userIdBuffer,
+                    id: Uint8Array.from(atob(data.user.id), c => c.charCodeAt(0)),
                     name: data.user.name,
                     displayName: data.user.displayName
                 },
-                pubKeyCredParams: data.pubKeyCredParams.map(param => ({
-                    type: param.type,
-                    alg: param.alg
-                })),
+                pubKeyCredParams: data.pubKeyCredParams,
                 authenticatorSelection: {
                     userVerification: "preferred"
                 },
                 timeout: 60000,
             };
 
-            console.log("PublicKeyCredentialCreationOptions:", publicKey);
+            const credential = await navigator.credentials.create({ publicKey });
 
-            try {
-                const credential = await navigator.credentials.create({ publicKey });
+            const completeResponse = await fetch('/register-passkey/', {
+                method: "PUT",
+                headers: {
+                    "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    id: credential.id,
+                    rawId: btoa(String.fromCharCode(...new Uint8Array(credential.rawId))),
+                    response: {
+                        clientDataJSON: btoa(String.fromCharCode(...new Uint8Array(credential.response.clientDataJSON))),
+                        attestationObject: btoa(String.fromCharCode(...new Uint8Array(credential.response.attestationObject))),
+                    }
+                })
+            });
 
-                const completeResponse = await fetch('/register-passkey/', {
-                    method: "PUT",
-                    headers: {
-                        "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value,
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        id: credential.id,
-                        rawId: btoa(String.fromCharCode(...new Uint8Array(credential.rawId))),
-                        type: credential.type,
-                        response: {
-                            clientDataJSON: btoa(String.fromCharCode(...new Uint8Array(credential.response.clientDataJSON))),
-                            attestationObject: btoa(String.fromCharCode(...new Uint8Array(credential.response.attestationObject)))
-                        }
-                    })
-                });
-
-                if (completeResponse.ok) {
-                    alert("Passkey registered successfully! Redirecting...");
-                    window.location.href = "/";
-                } else {
-                    alert("Registration failed. Please try again later or contact support.");
-                }
-            } catch (error) {
-                console.error("User cancelled or device issue:", error);
-                alert("Passkey registration was cancelled or could not be completed. Ensure your device supports WebAuthn and try again.");
+            if (completeResponse.ok) {
+                alert("Passkey registered successfully!");
+                window.location.href = "/";
+            } else {
+                alert("Failed to register passkey. Ensure only one passkey per device.");
             }
-        } else {
-            alert("Server did not provide a valid challenge for registration. Please try again.");
         }
     } catch (error) {
         console.error("Error during passkey registration:", error);
-        alert("An unexpected error occurred during passkey registration. Please check your connection and try again.");
     }
 }
+
 
 async function loginWithPasskey() {
     try {
