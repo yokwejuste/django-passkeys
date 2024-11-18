@@ -11,7 +11,7 @@ from django.http import HttpResponse
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
-from passkeys.models import UserPasskey
+from .models import DjPassKey
 from fido_auth.forms import UserRegistrationForm
 from django.db import IntegrityError
 
@@ -22,9 +22,7 @@ def register_passkey(request):
         challenge = os.urandom(32)
         challenge_b64 = base64.b64encode(challenge).decode("utf-8")
 
-        user_id_b64 = base64.b64encode(request.user.pk.to_bytes(4, "big")).decode(
-            "utf-8"
-        )
+        user_id_b64 = base64.b64encode(request.user.pk.to_bytes(4, "big")).decode("utf-8")
 
         return JsonResponse(
             {
@@ -50,12 +48,17 @@ def register_passkey(request):
         credential_id = base64.b64encode(base64.b64decode(raw_id)).decode("utf-8")
 
         try:
-            UserPasskey.objects.update_or_create(
+            passkey, created = DjPassKey.objects.update_or_create(
                 user=request.user,
                 device_id=device_id,
                 defaults={"credential_id": credential_id},
             )
-            return JsonResponse({"status": "success"})
+
+            if created:
+                return JsonResponse({"status": "Passkey registered successfully!"})
+            else:
+                return JsonResponse({"status": "Passkey updated successfully!"})
+
         except IntegrityError:
             return JsonResponse(
                 {"error": "A passkey for this device already exists."}, status=400
@@ -75,7 +78,7 @@ def login_view(request):
                 challenge = os.urandom(32)
                 request.session["webauthn_challenge"] = base64.b64encode(challenge).decode("utf-8")
 
-                passkey_credentials = UserPasskey.objects.values_list("credential_id", flat=True)
+                passkey_credentials = DjPassKey.objects.values_list("credential_id", flat=True)
                 allow_credentials = [
                     {
                         "id": cred_id,
@@ -95,11 +98,11 @@ def login_view(request):
                 response = data["response"]
                 credential_id = response["id"]
                 try:
-                    user_passkey = UserPasskey.objects.get(credential_id=credential_id)
+                    user_passkey = DjPassKey.objects.get(credential_id=credential_id)
                     user = user_passkey.user
                     login(request, user)
                     return JsonResponse({"status": "Logged in with passkey!"})
-                except UserPasskey.DoesNotExist:
+                except DjPassKey.DoesNotExist:
                     return JsonResponse({"error": "Invalid passkey credentials."}, status=400)
 
         username = request.POST.get("username")
